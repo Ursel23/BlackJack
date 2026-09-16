@@ -1,0 +1,193 @@
+/* V3 polish: photographic background slot, PNG cards, slower dealing and split wager controls. */
+.bcn-backdrop::before {
+    content: "";
+    position: absolute;
+    inset: -3%;
+    z-index: -1;
+    background-image: linear-gradient(rgba(3, 13, 12, .28), rgba(3, 13, 12, .58)), url('../img/barcelona-bg.jpg');
+    background-position: center;
+    background-size: cover;
+    filter: blur(9px) saturate(.82) contrast(.96);
+    transform: scale(1.06);
+    opacity: .34;
+}
+
+.bcn-grid { opacity: .08; }
+.bcn-glow { opacity: .09; }
+
+.playing-card {
+    isolation: isolate;
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.playing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 44px rgba(0,0,0,.32), inset 0 0 0 1px rgba(40,40,40,.04);
+}
+
+.card-asset {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    pointer-events: none;
+    user-select: none;
+}
+
+.card-fallback-art {
+    position: absolute;
+    inset: 18% 14% 28%;
+    display: grid;
+    place-items: center;
+    opacity: .4;
+}
+
+.card-fallback-art > span {
+    position: relative;
+    z-index: 2;
+    font-family: Georgia, serif;
+    font-size: clamp(34px, 3vw, 52px);
+}
+
+.card-fallback-art i {
+    position: absolute;
+    width: 86%;
+    aspect-ratio: 1;
+    border: 1px solid currentColor;
+    border-radius: 32% 68% 45% 55% / 47% 35% 65% 53%;
+    opacity: .18;
+    transform: rotate(14deg);
+}
+
+.motif-2 .card-fallback-art i { border-radius: 50%; transform: rotate(0deg); }
+.motif-3 .card-fallback-art i { border-radius: 12%; transform: rotate(45deg); }
+.motif-4 .card-fallback-art i { border-radius: 40% 60% 60% 40%; transform: rotate(-18deg); }
+.motif-5 .card-fallback-art i { border-radius: 0; transform: rotate(0deg); }
+.motif-6 .card-fallback-art i { border-radius: 50% 20% 50% 20%; }
+.motif-7 .card-fallback-art i { border-radius: 20%; transform: rotate(30deg); }
+.motif-8 .card-fallback-art i { border-radius: 50%; transform: scale(.72); }
+
+.card-enter {
+    animation: dealCardV3 .72s cubic-bezier(.18,.76,.2,1) both;
+    animation-delay: var(--delay, 0ms);
+}
+
+.card-reveal {
+    animation: revealCardV3 .78s cubic-bezier(.2,.72,.2,1) both;
+    animation-delay: var(--delay, 0ms);
+    transform-style: preserve-3d;
+}
+
+@keyframes dealCardV3 {
+    0% {
+        opacity: 0;
+        transform: translate(70px, -96px) rotate(8deg) scale(.88);
+        filter: blur(2px);
+    }
+    65% {
+        opacity: 1;
+        transform: translate(-4px, 4px) rotate(-1.5deg) scale(1.015);
+        filter: blur(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0) scale(1);
+    }
+}
+
+@keyframes revealCardV3 {
+    0% { opacity: .35; transform: rotateY(84deg) scale(.96); }
+    58% { opacity: 1; transform: rotateY(-7deg) scale(1.01); }
+    100% { opacity: 1; transform: rotateY(0) scale(1); }
+}
+
+.is-busy .action-panel .game-button,
+.is-busy .bet-panel button,
+.is-busy .split-wager button,
+.is-busy .split-wager input {
+    pointer-events: none;
+}
+
+.split-wager {
+    margin: 5px 0 2px;
+    padding: 12px;
+    border: 1px solid rgba(226, 189, 98, .18);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(226,189,98,.08), rgba(255,255,255,.025));
+}
+
+.split-wager[hidden] { display: none !important; }
+
+.split-wager__head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.split-wager__head > div {
+    min-width: 0;
+    padding: 8px 9px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.035);
+}
+
+.split-wager__head span,
+.split-wager__head small {
+    display: block;
+    color: rgba(244,240,232,.48);
+    font-size: 8px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.split-wager__head strong {
+    display: block;
+    margin: 2px 0;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.split-wager__controls {
+    display: grid;
+    grid-template-columns: 34px 1fr 34px;
+    gap: 8px;
+    align-items: center;
+}
+
+.split-wager__controls button {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(255,255,255,.045);
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.split-wager__controls button:disabled { opacity: .3; cursor: not-allowed; }
+.split-wager__controls input { width: 100%; accent-color: var(--yellow); }
+
+.game-button--split:not(:disabled) {
+    border-color: rgba(226,189,98,.28);
+    background: rgba(226,189,98,.07);
+}
+
+.table-panel {
+    box-shadow: 0 32px 100px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+@media (max-width: 760px) {
+    .bcn-backdrop::before { opacity: .24; filter: blur(7px) saturate(.78); }
+    .split-wager__head { grid-template-columns: 1fr 1fr; }
+    .playing-card:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-enter,
+    .card-reveal { animation-duration: .01ms !important; animation-delay: 0ms !important; }
+}

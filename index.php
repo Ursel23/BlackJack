@@ -19,9 +19,11 @@ $csrf = (string) $_SESSION['csrf'];
     <meta name="theme-color" content="#071413">
     <meta name="csrf-token" content="<?= htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8') ?>">
     <title>21 BCN — Blackjack Barcelona</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.21.16/dist/css/uikit.min.css">
     <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="assets/css/v3.css">
 </head>
 <body>
 <div class="bcn-backdrop" aria-hidden="true">
@@ -84,9 +86,7 @@ $csrf = (string) $_SESSION['csrf'];
         <section class="table-panel glass-panel" aria-live="polite">
             <div class="table-orbit table-orbit--one" aria-hidden="true"></div>
             <div class="table-orbit table-orbit--two" aria-hidden="true"></div>
-            <div class="bcn-skyline" aria-hidden="true">
-                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-            </div>
+            <div class="bcn-skyline" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
             <div class="hand-zone dealer-zone">
                 <div class="hand-heading">
@@ -131,14 +131,27 @@ $csrf = (string) $_SESSION['csrf'];
                     <button class="game-button" id="doubleButton" type="button" disabled>
                         <span><strong>Doblar apuesta</strong><small>+ apuesta · 1 carta</small></span><kbd>D</kbd>
                     </button>
+
+                    <div id="splitWager" class="split-wager" hidden>
+                        <div class="split-wager__head">
+                            <div><span>Mano 1</span><strong id="splitFirstBet">25 €</strong><small>ya apostado</small></div>
+                            <div><span>Mano 2</span><strong id="splitSecondBet">25 €</strong><small>elige importe</small></div>
+                        </div>
+                        <div class="split-wager__controls">
+                            <button id="splitBetMinus" type="button" aria-label="Reducir apuesta de la segunda mano">−</button>
+                            <input id="splitBetRange" type="range" min="5" max="100" step="5" value="25" aria-label="Apuesta de la segunda mano">
+                            <button id="splitBetPlus" type="button" aria-label="Aumentar apuesta de la segunda mano">+</button>
+                        </div>
+                    </div>
+
                     <button class="game-button game-button--split" id="splitButton" type="button" disabled>
-                        <span><strong>Dividir pareja</strong><small>2 cartas iguales → 2 manos</small></span><kbd>P</kbd>
+                        <span><strong>Dividir pareja</strong><small id="splitButtonHelp">2 cartas iguales → 2 manos</small></span><kbd>P</kbd>
                     </button>
                 </div>
 
                 <div class="action-help">
                     <p><b>Doblar</b> duplica la apuesta de esa mano, recibes una sola carta y te plantas.</p>
-                    <p><b>Dividir</b> aparece cuando tus dos primeras cartas tienen el mismo rango.</p>
+                    <p><b>Dividir</b>: la mano 1 conserva su apuesta y puedes elegir cuánto arriesgar en la mano 2 antes de separar las cartas.</p>
                 </div>
             </div>
 
@@ -149,7 +162,7 @@ $csrf = (string) $_SESSION['csrf'];
     <footer class="game-footer">
         <span>BARCELONA · 41.3874° N</span>
         <span>52 CARTAS · 52 REFERENCIAS</span>
-        <span>V2 / 2026</span>
+        <span>V3 / 2026</span>
     </footer>
 </main>
 
@@ -160,7 +173,7 @@ $csrf = (string) $_SESSION['csrf'];
         <h2>Acércate a 21 sin pasarte.</h2>
         <p>Las figuras valen 10 y el as vale 1 u 11. El crupier pide hasta 17. Un blackjack natural paga 3:2.</p>
         <p><strong>Doblar apuesta</strong>: duplicas la apuesta de la mano activa, recibes exactamente una carta y te plantas automáticamente.</p>
-        <p><strong>Dividir pareja</strong>: si tus dos cartas iniciales tienen el mismo rango, puedes separarlas en dos manos. Se descuenta una segunda apuesta igual a la primera.</p>
+        <p><strong>Dividir pareja</strong>: si tus dos cartas iniciales tienen el mismo rango, se separan en dos manos. En 21 BCN la primera conserva su apuesta original y puedes elegir la apuesta de la segunda antes de confirmar el split.</p>
         <p class="uk-text-small uk-text-muted">El saldo es ficticio y solo vive en tu sesión del navegador.</p>
     </div>
 </div>

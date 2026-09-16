@@ -41,7 +41,7 @@ try {
         'hit' => BlackjackGame::hit(),
         'stand' => BlackjackGame::stand(),
         'double' => BlackjackGame::double(),
-        'split' => BlackjackGame::split(),
+        'split' => BlackjackGame::split((int) ($input['bet'] ?? 0)),
         'reset-bankroll' => BlackjackGame::resetBankroll(),
         default => throw new RuntimeException('Acción no reconocida.'),
     };

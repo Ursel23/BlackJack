@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 final class BlackjackGame
 {
-    private const STATE_VERSION = 2;
+    private const STATE_VERSION = 3;
     private const STARTING_BALANCE = 250.0;
     private const MIN_BET = 5;
     private const MAX_BET = 100;
@@ -147,7 +147,7 @@ final class BlackjackGame
         return self::publicState();
     }
 
-    public static function split(): array
+    public static function split(int $requestedSecondBet = 0): array
     {
         self::bootstrap();
         $state = &$_SESSION['blackjack'];
@@ -162,33 +162,40 @@ final class BlackjackGame
             throw new RuntimeException('Solo puedes dividir cuando las dos cartas iniciales tienen el mismo valor facial.');
         }
 
-        $bet = (int) $hand['bet'];
-        if ((float) $state['balance'] < $bet) {
-            throw new RuntimeException('No tienes saldo suficiente para crear la segunda mano.');
+        if ((float) $state['balance'] < self::MIN_BET) {
+            throw new RuntimeException('No tienes saldo suficiente para abrir una segunda mano.');
         }
 
-        $state['balance'] -= $bet;
+        $firstBet = (int) $hand['bet'];
+        $suggested = min($firstBet, self::MAX_BET, (int) (floor(((float) $state['balance']) / 5) * 5));
+        $secondBet = self::normalizeBet($requestedSecondBet > 0 ? $requestedSecondBet : $suggested, (float) $state['balance']);
+
+        $state['balance'] -= $secondBet;
         $leftCard = $hand['cards'][0];
         $rightCard = $hand['cards'][1];
 
         $state['hands'] = [
             [
                 'cards' => [$leftCard, self::draw($state)],
-                'bet' => $bet,
+                'bet' => $firstBet,
                 'status' => 'playing',
                 'result' => null,
                 'wasSplit' => true,
             ],
             [
                 'cards' => [$rightCard, self::draw($state)],
-                'bet' => $bet,
+                'bet' => $secondBet,
                 'status' => 'playing',
                 'result' => null,
                 'wasSplit' => true,
             ],
         ];
         $state['activeHand'] = 0;
-        $state['message'] = 'Pareja dividida: ahora juegas dos manos independientes.';
+        $state['message'] = sprintf(
+            'Pareja dividida: mano 1 mantiene %d € y mano 2 juega %d €.',
+            $firstBet,
+            $secondBet
+        );
 
         self::autoStandTwentyOne($state);
         return self::publicState();
@@ -206,6 +213,7 @@ final class BlackjackGame
                 'hidden' => true,
                 'variant' => 53,
                 'motif' => 'Reverso BCN',
+                'asset' => 'assets/cards/back.png',
             ];
         }
 
@@ -228,13 +236,16 @@ final class BlackjackGame
         $canDouble = $canAct
             && count($activeHand['cards']) === 2
             && (float) $state['balance'] >= (int) $activeHand['bet'];
-        $canSplit = $canAct
+        $canSplitPair = $canAct
             && count($state['hands']) < self::MAX_HANDS
             && count($activeHand['cards']) === 2
-            && ($activeHand['cards'][0]['rank'] ?? null) === ($activeHand['cards'][1]['rank'] ?? null)
-            && (float) $state['balance'] >= (int) $activeHand['bet'];
+            && ($activeHand['cards'][0]['rank'] ?? null) === ($activeHand['cards'][1]['rank'] ?? null);
+        $canSplit = $canSplitPair && (float) $state['balance'] >= self::MIN_BET;
 
         $maxBet = min(self::MAX_BET, (int) (floor(((float) $state['balance']) / 5) * 5));
+        $suggestedSplitBet = $canSplit
+            ? min((int) ($activeHand['bet'] ?? self::MIN_BET), max(self::MIN_BET, $maxBet))
+            : 0;
 
         return [
             'balance' => (float) $state['balance'],
@@ -252,8 +263,12 @@ final class BlackjackGame
             'canStand' => $canAct,
             'canDouble' => $canDouble,
             'canSplit' => $canSplit,
+            'splitPairDetected' => $canSplitPair,
             'minBet' => self::MIN_BET,
             'maxBet' => max(0, $maxBet),
+            'minSplitBet' => self::MIN_BET,
+            'maxSplitBet' => max(0, $maxBet),
+            'suggestedSplitBet' => $suggestedSplitBet,
             'canStart' => !$playing && (float) $state['balance'] >= self::MIN_BET,
         ];
     }
@@ -414,10 +429,7 @@ final class BlackjackGame
     private static function aggregateResult(array $results): string
     {
         $unique = array_values(array_unique($results));
-        if (count($unique) === 1) {
-            return $unique[0];
-        }
-        return 'mixed';
+        return count($unique) === 1 ? $unique[0] : 'mixed';
     }
 
     private static function resultMessage(array $results, int $dealerScore): string
@@ -442,7 +454,6 @@ final class BlackjackGame
         if (empty($state['deck'])) {
             throw new RuntimeException('El mazo se ha quedado sin cartas.');
         }
-
         return array_pop($state['deck']);
     }
 
@@ -503,6 +514,7 @@ final class BlackjackGame
                     'suitLabel' => $meta['label'],
                     'motif' => $motifs[$key],
                     'variant' => $variant++,
+                    'asset' => 'assets/cards/' . $suit . '-' . $rank . '.png',
                 ];
             }
         }
