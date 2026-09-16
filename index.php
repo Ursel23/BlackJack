@@ -33,9 +33,7 @@ $csrf = (string) $_SESSION['csrf'];
 <main class="game-shell uk-container uk-container-expand">
     <header class="topbar glass-panel">
         <a class="brand" href="#" aria-label="21 BCN">
-            <span class="brand-mark" aria-hidden="true">
-                <span></span><span></span><span></span><span></span>
-            </span>
+            <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
             <span class="brand-copy"><strong>21 BCN</strong><small>BLACKJACK / BARCELONA</small></span>
         </a>
 
@@ -51,19 +49,30 @@ $csrf = (string) $_SESSION['csrf'];
     </header>
 
     <section class="game-layout">
-        <aside class="side-panel glass-panel">
+        <aside class="side-panel glass-panel bet-panel">
             <div>
-                <p class="eyebrow">APUESTA</p>
+                <p class="eyebrow">APUESTA POR MANO</p>
                 <div class="bet-control">
                     <button id="betMinus" class="bet-step" type="button" aria-label="Reducir apuesta">−</button>
-                    <div><strong id="betValue">25 €</strong><span>por mano</span></div>
+                    <div><strong id="betValue">25 €</strong><span>antes de repartir</span></div>
                     <button id="betPlus" class="bet-step" type="button" aria-label="Aumentar apuesta">+</button>
+                </div>
+
+                <input id="betRange" class="bet-range" type="range" min="5" max="100" step="5" value="25" aria-label="Cantidad de apuesta">
+
+                <div class="bet-presets" aria-label="Apuestas rápidas">
+                    <button type="button" data-bet="5">5 €</button>
+                    <button type="button" data-bet="10">10 €</button>
+                    <button type="button" data-bet="25">25 €</button>
+                    <button type="button" data-bet="50">50 €</button>
+                    <button type="button" data-bet="100">100 €</button>
                 </div>
             </div>
 
             <div class="city-note">
-                <span class="city-note-index">BCN / 01</span>
-                <p>52 cartas.<br>52 guiños a Barcelona.</p>
+                <span class="city-note-index">BCN / 52</span>
+                <p>Una baraja.<br>Una ciudad entera.</p>
+                <small>Cada carta interpreta un lugar, textura o detalle de Barcelona.</small>
             </div>
 
             <div class="side-footer">
@@ -75,6 +84,9 @@ $csrf = (string) $_SESSION['csrf'];
         <section class="table-panel glass-panel" aria-live="polite">
             <div class="table-orbit table-orbit--one" aria-hidden="true"></div>
             <div class="table-orbit table-orbit--two" aria-hidden="true"></div>
+            <div class="bcn-skyline" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
 
             <div class="hand-zone dealer-zone">
                 <div class="hand-heading">
@@ -88,11 +100,9 @@ $csrf = (string) $_SESSION['csrf'];
             </div>
 
             <div class="table-center">
-                <div class="center-emblem" aria-hidden="true">
-                    <span>21</span><small>BCN</small>
-                </div>
+                <div class="center-emblem" aria-hidden="true"><span>21</span><small>BCN</small></div>
                 <div class="message-wrap">
-                    <p id="gameMessage">Ajusta tu apuesta y reparte cuando quieras.</p>
+                    <p id="gameMessage">Elige cuánto quieres apostar y reparte cuando quieras.</p>
                     <span id="resultBadge" class="result-badge" hidden></span>
                 </div>
             </div>
@@ -100,12 +110,12 @@ $csrf = (string) $_SESSION['csrf'];
             <div class="hand-zone player-zone">
                 <div class="hand-heading">
                     <div>
-                        <p class="eyebrow">TU MANO</p>
+                        <p class="eyebrow">TU JUGADA</p>
                         <h2 id="playerScore">—</h2>
                     </div>
                     <span class="status-dot status-dot--warm"><i></i> JUGADOR</span>
                 </div>
-                <div class="cards-row" id="playerCards"></div>
+                <div id="playerHands" class="player-hands"></div>
             </div>
         </section>
 
@@ -114,11 +124,21 @@ $csrf = (string) $_SESSION['csrf'];
                 <p class="eyebrow">ACCIONES</p>
                 <div class="action-stack">
                     <button class="game-button game-button--primary" id="startButton" type="button">
-                        <span>Repartir</span><span uk-icon="icon: arrow-right"></span>
+                        <span>Repartir mano</span><span class="button-arrow" aria-hidden="true">→</span>
                     </button>
-                    <button class="game-button" id="hitButton" type="button" disabled>Pedir carta <kbd>H</kbd></button>
-                    <button class="game-button" id="standButton" type="button" disabled>Plantarse <kbd>S</kbd></button>
-                    <button class="game-button" id="doubleButton" type="button" disabled>Doblar <kbd>D</kbd></button>
+                    <button class="game-button" id="hitButton" type="button" disabled><span>Pedir carta</span><kbd>H</kbd></button>
+                    <button class="game-button" id="standButton" type="button" disabled><span>Plantarse</span><kbd>S</kbd></button>
+                    <button class="game-button" id="doubleButton" type="button" disabled>
+                        <span><strong>Doblar apuesta</strong><small>+ apuesta · 1 carta</small></span><kbd>D</kbd>
+                    </button>
+                    <button class="game-button game-button--split" id="splitButton" type="button" disabled>
+                        <span><strong>Dividir pareja</strong><small>2 cartas iguales → 2 manos</small></span><kbd>P</kbd>
+                    </button>
+                </div>
+
+                <div class="action-help">
+                    <p><b>Doblar</b> duplica la apuesta de esa mano, recibes una sola carta y te plantas.</p>
+                    <p><b>Dividir</b> aparece cuando tus dos primeras cartas tienen el mismo rango.</p>
                 </div>
             </div>
 
@@ -128,8 +148,8 @@ $csrf = (string) $_SESSION['csrf'];
 
     <footer class="game-footer">
         <span>BARCELONA · 41.3874° N</span>
-        <span>BLACKJACK, SIN PRISA.</span>
-        <span>V1 / 2026</span>
+        <span>52 CARTAS · 52 REFERENCIAS</span>
+        <span>V2 / 2026</span>
     </footer>
 </main>
 
@@ -138,7 +158,9 @@ $csrf = (string) $_SESSION['csrf'];
         <button class="uk-modal-close-default" type="button" uk-close></button>
         <p class="eyebrow">REGLAS RÁPIDAS</p>
         <h2>Acércate a 21 sin pasarte.</h2>
-        <p>Las figuras valen 10 y el as vale 1 u 11. El crupier pide hasta 17. Un blackjack natural paga 3:2. Doblar duplica la apuesta, reparte una única carta y te planta automáticamente.</p>
+        <p>Las figuras valen 10 y el as vale 1 u 11. El crupier pide hasta 17. Un blackjack natural paga 3:2.</p>
+        <p><strong>Doblar apuesta</strong>: duplicas la apuesta de la mano activa, recibes exactamente una carta y te plantas automáticamente.</p>
+        <p><strong>Dividir pareja</strong>: si tus dos cartas iniciales tienen el mismo rango, puedes separarlas en dos manos. Se descuenta una segunda apuesta igual a la primera.</p>
         <p class="uk-text-small uk-text-muted">El saldo es ficticio y solo vive en tu sesión del navegador.</p>
     </div>
 </div>

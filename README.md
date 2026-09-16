@@ -1,10 +1,10 @@
 # 21 BCN — Blackjack Barcelona
 
-Primera versión jugable de un blackjack minimalista inspirado en Barcelona.
+Blackjack minimalista inspirado en Barcelona, desarrollado con PHP, HTML, CSS, UIKit y jQuery. No utiliza base de datos: el estado vive únicamente en `$_SESSION`.
 
 ## Stack
 
-- PHP 8.1+ (backend y sesiones)
+- PHP 8.1+
 - HTML5
 - CSS propio + UIKit 3
 - jQuery
@@ -18,17 +18,21 @@ php -S localhost:8000
 
 Abre `http://localhost:8000`.
 
-## Qué incluye esta V1
+## Funcionalidades actuales
 
-- Reglas funcionales de blackjack para un jugador contra crupier.
-- Pedir, plantarse y doblar.
+- Repartir, pedir carta y plantarse.
+- **Doblar apuesta**: duplica la apuesta de la mano activa, entrega una carta y planta automáticamente.
+- **Dividir pareja / split** cuando las dos cartas iniciales tienen el mismo rango.
+- Dos manos independientes después de dividir, con liquidación individual contra el crupier.
 - Blackjack natural con pago 3:2.
-- Saldo y apuesta guardados únicamente en `$_SESSION`.
+- Selector de apuesta con botones `+ / -`, slider y apuestas rápidas de 5, 10, 25, 50 y 100 €.
+- Saldo ficticio guardado en sesión.
 - API AJAX en `api/game.php`.
-- UI responsive con estética glass / Barcelona nocturna.
-- 52 combinaciones de carta con referencia barcelonesa propia y patrón visual generativo único.
+- Interfaz responsive con UIKit y glassmorphism.
+- 52 referencias barcelonesas, una por carta.
+- Ilustraciones SVG generadas en frontend inspiradas en Sagrada Família, Eixample, Montjuïc, Arc de Triomf, mar Mediterráneo, trencadís, fachadas modernistas, panots y otros elementos de Barcelona.
 - Un único reverso BCN compartido por toda la baraja.
-- Atajos de teclado: `H` pedir, `S` plantarse, `D` doblar.
+- Atajos: `H` pedir, `S` plantarse, `D` doblar apuesta y `P` dividir pareja.
 
 ## Estructura
 
@@ -44,6 +48,6 @@ Abre `http://localhost:8000`.
     └── js/game.js
 ```
 
-## Siguiente iteración sugerida
+## Notas de reglas
 
-La capa visual de las cartas está desacoplada de la lógica. Los 52 motivos viven en `BlackjackGame::motifs()` y cada carta recibe un `variant` único. Esto permite sustituir progresivamente los patrones generativos por SVGs/ilustraciones definitivas sin tocar el motor del juego.
+Esta versión permite una división por ronda. El split requiere dos cartas con el mismo rango facial y saldo suficiente para colocar una segunda apuesta igual a la original. Una mano de 21 obtenida tras dividir no se considera blackjack natural y paga como victoria normal.
